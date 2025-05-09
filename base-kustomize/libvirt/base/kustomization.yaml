@@ -1,0 +1,25 @@
+sortOptions:
+  order: fifo
+resources:
+  - all.yaml
+
+patches:
+  - target:
+      kind: DaemonSet
+      name: libvirt-libvirt-default
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/containers/1/args/0
+      - op: add
+        path: /spec/template/spec/containers/1/volumeMounts/1
+        value: 
+          name: libvirt-sock
+          mountPath: /var/run/libvirt
+          readOnly: true
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          name: libvirt-sock
+          hostPath:
+            path: /var/run/libvirt
+            type: DirectoryOrCreate

@@ -14,7 +14,7 @@ HELM_CMD+=" -f ${BASE_OVERRIDES}"
 for dir in "$GLOBAL_OVERRIDES_DIR" "$SERVICE_CONFIG_DIR"; do
     if compgen -G "${dir}/*.yaml" > /dev/null; then
         for yaml_file in "${dir}"/*.yaml; do
-            # Avoid re-adding the base override file if present in the service directory
+            # Avoid re-adding the base override file if it is found in the service directory
             if [ "${yaml_file}" != "${BASE_OVERRIDES}" ]; then
                 HELM_CMD+=" -f ${yaml_file}"
             fi
@@ -22,10 +22,13 @@ for dir in "$GLOBAL_OVERRIDES_DIR" "$SERVICE_CONFIG_DIR"; do
     fi
 done
 
-HELM_CMD+=" $@"
+HELM_CMD+=" --post-renderer /etc/genestack/kustomize/kustomize.sh"
+HELM_CMD+=" --post-renderer-args libvirt/overlay"
 
 helm repo add openstack-helm-infra https://tarballs.opendev.org/openstack/openstack-helm-infra
 helm repo update
+
+HELM_CMD+=" $@"
 
 echo "Executing Helm command:"
 echo "${HELM_CMD}"
